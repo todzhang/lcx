@@ -18,7 +18,7 @@
 #include "LcxConfig.h"
 #include "socket.h"
 
-#include "../lib/contrib/getopt.h"
+#include "../lib/getopt/getopt.h"
 
 
 #define VERSION "1.00"
