@@ -18,14 +18,22 @@
 #include "LcxConfig.h"
 #include "socket.h"
 
-#include "../lib/getopt/getopt.h"
+#include "../lib/wingetopt/src/getopt.h"
 
 
-#define VERSION "1.00"
 #define TIMEOUT 300
 #define MAXSIZE 20480
 #define HOSTLEN 40
 #define CONNECTNUM 5
+
+typedef enum _METHOD
+{
+	LISTEN = 1, TRAN, SLAVE
+}METHOD;
+
+#define STR_LISTEN "listen"
+#define STR_TRAN "tran"
+#define STR_SLAVE "slave"
 
 // define 2 socket struct
 typedef struct _transocket
@@ -33,6 +41,19 @@ typedef struct _transocket
 	SOCKET fd1;
 	SOCKET fd2;
 }transocket;
+
+
+typedef struct _GlobalArgs {
+	METHOD method;                /* -methon option */
+	char* logFileName;    /* -o option */
+	FILE* logFile;
+	int verbosity;              /* -v option */
+	int iConnectPort;
+	char* connectHost;
+	int iTransmitPort;
+	char* transmitHost;
+	int bFreeConsole;
+}GlobalArgs;
 
 // define function 
 void ver();
@@ -42,10 +63,13 @@ void getctrlc(int j);
 void closeallfd();
 void makelog(char* buffer, int length);
 void proxy(int port);
-void bind2bind(int port1, int port2);
-void bind2conn(int port1, char* host, int port2);
-void conn2conn(char* host1, int port1, char* host2, int port2);
+void bind2bind(GlobalArgs args);
+void bind2conn(GlobalArgs args);
+void conn2conn(GlobalArgs args);
 int testifisvalue(char* str);
 int create_socket();
 int create_server(int sockfd, int port);
 int client_connect(int sockfd, char* server, int port);
+
+
+METHOD str2method(char* method);

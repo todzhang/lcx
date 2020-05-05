@@ -1,4 +1,4 @@
-#if defined(_WINDOWS) 
+#if defined(WIN32) 
 	#include <winsock.h>
 	#pragma comment(lib, "ws2_32.lib")
 	# define sleep(_x)		Sleep((_x)*1000)

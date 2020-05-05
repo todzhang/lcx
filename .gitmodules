@@ -1,6 +1,6 @@
 [submodule "third-party/gtest"]
 	path = third-party/gtest
 	url = https://github.com/google/googletest.git
-[submodule "lib/getopt"]
-	path = lib/getopt
-	url = https://github.com/Chunde/getopt-for-windows.git
+[submodule "lib/wingetopt"]
+	path = lib/wingetopt
+	url = https://github.com/alex85k/wingetopt.git
