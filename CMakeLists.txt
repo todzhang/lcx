@@ -21,6 +21,7 @@ project ("lcx")
 
 # force static runtime libraries for msvc builds
 if(MSVC)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
   set(variables 
     CMAKE_CXX_FLAGS_DEBUG
     CMAKE_CXX_FLAGS_RELEASE
@@ -37,6 +38,7 @@ endif()
 # The version number.
 set (LCX_VERSION_MAJOR 0)
 set (LCX_VERSION_MINOR 1)
+set (LCX_VERSION "1.0")
 
 # configure a header file to pass some of the CMake settings
 # to the source code
@@ -64,7 +66,7 @@ MESSAGE(STATUS "LCX_INCLUDE_DIRS is ${LCX_INCLUDE_DIRS}")
 MESSAGE(STATUS "LCX_SOURCES is ${LCX_SOURCES}")
 
 add_executable (lcx ${LCX_SOURCES} ${LIB_SOURCES})
-#target_include_directories(lcx PRIVATE ${LCX_INCLUDE_DIRS})
+target_include_directories(lcx PRIVATE ${LCX_INCLUDE_DIRS})
 
 ################################
 # Testing

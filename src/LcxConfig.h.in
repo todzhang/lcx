@@ -1,3 +1,5 @@
 // the configured options and settings for Tutorial
 #define LCX_VERSION_MAJOR @LCX_VERSION_MAJOR@
 #define LCX_VERSION_MINOR @LCX_VERSION_MINOR@
+
+#define VERSION "@LCX_VERSION@"
