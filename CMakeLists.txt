@@ -66,7 +66,7 @@ MESSAGE(STATUS "LCX_INCLUDE_DIRS is ${LCX_INCLUDE_DIRS}")
 MESSAGE(STATUS "LCX_SOURCES is ${LCX_SOURCES}")
 
 add_executable (lcx ${LCX_SOURCES} ${LIB_SOURCES})
-#target_include_directories(lcx PRIVATE ${LCX_INCLUDE_DIRS})
+target_include_directories(lcx PRIVATE ${LCX_INCLUDE_DIRS})
 
 ################################
 # Testing

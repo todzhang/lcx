@@ -19,13 +19,20 @@
 	  the obvious */
 static int helpme()
 {
-	printf("Packet Transmit for Windows v" VERSION );
-    printf("[Usage of Packet Transmit:]\r\n");
-    printf("[option:]\n");
-    printf(" -d  (detach console)\n");
-    printf(" -listen <port1> <port2>\n");
-    printf(" -tran <local port>  <ip>  <port>\n");
-    printf(" -slave <ip1> <port1> <ip2> <port2>\n\n");
+	printf("lcx v" VERSION "\n");
+    printf("./lcx ([-options][values])* \n\
+	options :\n\
+	- s state setup the function.You can pick one from the following options :\n\
+	ssocksd, rcsocks, rssocks, lcx_listen, lcx_tran, lcx_slave\n\
+	- l listenport open a port for the service startup.\n\
+	- d refhost set the reflection host address.\n\
+	- e refport set the reflection port.\n\
+	- f connhost set the connect host address .\n\
+	- g connport set the connect port.\n\
+	- h help show the help text, By adding the - s parameter, you can also see the more detailed help.\n\
+	- a about show the about pages\n\
+	- v version show the version.\n\
+	- t usectime set the milliseconds for timeout.The default value is 1000");
 	return(0);
 } /* helpme */
 
@@ -33,7 +40,7 @@ METHOD str2method(char* method) {
 	if (!strcmp(method, STR_LISTEN)) {
 		return LISTEN;
 	}
-	else if (!strcmp(method, STR_LISTEN)) {
+	else if (!strcmp(method, STR_TRAN)) {
 		return TRAN;
 	}
 	else if (!strcmp(method, STR_SLAVE)) {
@@ -46,83 +53,79 @@ METHOD str2method(char* method) {
 
 GlobalArgs globalArgs;
 
-static const char* optString = "mct:h?:l:v";
+
 
 int main(int argc, char* argv[])
 {
 	/* Initialize globalArgs before we get to work. */
 	globalArgs.method = 0;     /* false */
-	globalArgs.logFileName = NULL;
-	globalArgs.logFile = NULL;
 	globalArgs.verbosity = 0;
-	globalArgs.transmitHost = NULL;
 	globalArgs.connectHost = NULL;
+	globalArgs.transmitHost = NULL;
     globalArgs.bFreeConsole = 0;
 
-	static struct option long_options[] =
-	{
-		/* These options set a flag. */
-		{"verbose", no_argument,       &globalArgs.verbosity, 1},
-		{"brief",   no_argument,       &globalArgs.verbosity, 0},
-		/* These options don't set a flag.
-		   We distinguish them by their indices. */
-		{"method",  required_argument,       0, 'm'},
-		{"connectHost",  required_argument,       0, 'h'},
-		{"connectPort",  required_argument,       0, 'c'},
-        {"transmitHost",  required_argument,       0, 'd'},
-        {"transmitPort",  required_argument,       0, 't'},
-		{"log",     required_argument,       0, 'l'},
-		{"help",    no_argument, 0, '?'},
-		{0, 0, 0, 0}
-	};
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
 
+	register int option;
+	while ((option = getopt(argc, argv, ":s:l:m:d:e:f:g:v:")) != EOF) {
 
-	register int x;
-	while ((x = getopt_long_only(argc, argv, optString, long_options, &option_index)) != EOF) {
-
-		switch (x) {
-		case 'm':
+		switch (option) {
+		case 's':
+			printf("Given Option: %c\n", option);
             if (optarg) {
                 globalArgs.method = str2method(optarg);
             }
 			break;
 
-
-
-		case 'h':
+		case 'l':
+			printf("Given Option: %c\n", option);
 			if (optarg) {
-				globalArgs.transmitHost = optarg;
+				globalArgs.iListenPort = atoi(optarg);
 			}
 			break;
 
-		case 'c':
-            if (optarg) {
-			    globalArgs.iConnectPort = atoi(optarg);
-            }
+		case 'm':
+			printf("Given Option: %c\n", option);
+			if (optarg) {
+				globalArgs.transmitHost = atoi(optarg);
+			}
 			break;
 
 		case 'd':
+			printf("Given Option: %c\n", option);
+			if (optarg) {
+				globalArgs.connectHost = optarg;
+			}
+			break;
+
+		case 'e':
+			printf("Given Option: %c\n", option);
+			if (optarg) {
+				globalArgs.iConnectPort = atoi(optarg);
+			}
+			break;
+
+		case 'f':
+			printf("Given Option: %c\n", option);
 			if (optarg) {
 				globalArgs.transmitHost = optarg;
 			}
 			break;
 
-		case 't':
+		case 'g':
+			printf("Given Option: %c\n", option);
             if (optarg) {
                 globalArgs.iTransmitPort = atoi(optarg);
             }
 			break;
 
-		case 'l':
-			globalArgs.logFileName = optarg;
-			break;
-
 		case 'v':
+			printf("Given Option: %c\n", option);
 			globalArgs.verbosity = 1;
 			break;
 		case '?':
+			printf("Given Option: %c\n", option);
 			helpme();			/* exits by itself */
 			break;
 		default:
@@ -154,10 +157,10 @@ int main(int argc, char* argv[])
 		bind2conn(globalArgs);
 		break;
 	case SLAVE:
-		//conn2conn(globalArgs);
+		conn2conn(globalArgs);
 		break;
 	default:
-		//usage(argv[0]);
+		helpme();
 		break;
 	}
 
@@ -189,7 +192,7 @@ void bind2bind(GlobalArgs args)
 	if ((fd1 = create_socket()) == 0) return;
 	if ((fd2 = create_socket()) == 0) return;
 
-	int port1 = args.iConnectPort;
+	int port1 = args.iListenPort;
 	int port2 = args.iTransmitPort;
 
 	printf("[+] Listening port %d ......\r\n", port1);
@@ -255,7 +258,7 @@ void bind2bind(GlobalArgs args)
 //************************************************************************************
 void bind2conn(GlobalArgs args)
 {
-	int port1 = args.iConnectPort;
+	int port1 = args.iListenPort;
 	char* host = args.transmitHost;
 	int port2 = args.iTransmitPort;
 

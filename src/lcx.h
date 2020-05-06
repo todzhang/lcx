@@ -48,10 +48,16 @@ typedef struct _GlobalArgs {
 	char* logFileName;    /* -o option */
 	FILE* logFile;
 	int verbosity;              /* -v option */
+
+	int iListenPort;
+	char* listenHost;
+
 	int iConnectPort;
 	char* connectHost;
+
 	int iTransmitPort;
 	char* transmitHost;
+
 	int bFreeConsole;
 }GlobalArgs;
 
