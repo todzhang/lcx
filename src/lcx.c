@@ -4,9 +4,6 @@
 #include "lcx.h"
 
 
-/* Debug macro: squirt whatever to stderr and sleep a bit so we can see it go
-   by.  need to call like Debug ((stuff)) [with no ; ] so macro args match!
-   Beware: writes to stdOUT... */
 #ifdef DEBUG
 #define Debug(x) printf x; printf ("\n"); fflush (stdout); sleep (1);
 #else
@@ -46,6 +43,9 @@ METHOD str2method(char* method) {
 	else if (!strcmp(method, STR_SLAVE)) {
 		return SLAVE;
 	}
+	else if (!strcmp(method, STR_SSOCKSD)) {
+		return SSOCKSD;
+	}
 	else {
 		return 0;
 	}
@@ -58,11 +58,13 @@ GlobalArgs globalArgs;
 int main(int argc, char* argv[])
 {
 	/* Initialize globalArgs before we get to work. */
-	globalArgs.method = 0;     /* false */
-	globalArgs.verbosity = 0;
-	globalArgs.connectHost = NULL;
-	globalArgs.transmitHost = NULL;
-    globalArgs.bFreeConsole = 0;
+	memset(&globalArgs, 0, sizeof(globalArgs));
+	//globalArgs.method = 0;     /* false */
+	//globalArgs.verbosity = 0;
+	//globalArgs.connectHost = NULL;
+	//globalArgs.transmitHost = NULL;
+	//globalArgs.bFreeConsole = 0;
+	//globalArgs.ssl = 0;
 
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
@@ -137,9 +139,18 @@ int main(int argc, char* argv[])
 	//globalArgs.numInputFiles = argc - optind;
 
 
-        // Win Start Winsock.
+    // Win Start Winsock.
     WSADATA wsadata;
     WSAStartup(MAKEWORD(1, 1), &wsadata);
+
+#ifdef WIN32
+	WSADATA wsaData;
+	int wsaInit = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (wsaInit != 0) {
+		ERROR(L_NOTICE, "WSAStartup failed: %d\n", wsaInit);
+		exit(1);
+	}
+#endif
 
     signal(SIGINT, &getctrlc);
 
@@ -159,6 +170,10 @@ int main(int argc, char* argv[])
 	case SLAVE:
 		conn2conn(globalArgs);
 		break;
+
+	case SSOCKSD:
+		ssocksd(globalArgs);
+		break;
 	default:
 		helpme();
 		break;
@@ -169,7 +184,9 @@ int main(int argc, char* argv[])
 		closeallfd();
 	}
 
-    WSACleanup();
+	#ifdef WIN32
+		WSACleanup();
+	#endif
 
 	return 0;
 }
@@ -193,7 +210,7 @@ void bind2bind(GlobalArgs args)
 	if ((fd2 = create_socket()) == 0) return;
 
 	int port1 = args.iListenPort;
-	int port2 = args.iTransmitPort;
+	int port2 = args.iConnectPort;
 
 	printf("[+] Listening port %d ......\r\n", port1);
 	fflush(stdout);
@@ -363,22 +380,6 @@ void conn2conn(GlobalArgs args)
 
 	while (1)
 	{
-		/*
-		while(connectnum)
-		{
-		if(connectnum < CONNECTNUM)
-		{
-		Sleep(10000);
-		break;
-		}
-		else
-		{
-		Sleep(TIMEOUT*1000);
-		continue;
-		}
-		}
-		*/
-
 		if ((sockfd1 = create_socket()) == 0) return;
 		if ((sockfd2 = create_socket()) == 0) return;
 
@@ -770,4 +771,115 @@ void getctrlc(int j)
     printf("\r\n[-] Received Ctrl+C\r\n");
     closeallfd();
     exit(0);
+}
+
+#define DEFAULT_PORT 1080
+
+// global to prevent messing with the stack
+// see http://stackoverflow.com/questions/1847789/segmentation-fault-on-large-array-sizes
+s_client tc[MAXCLI];
+
+int boucle_princ = 1;
+void capte_fin(int sig) {
+	printf("serveur: signal %d caught\n", sig);
+	boucle_princ = 0;
+}
+
+// ssocksd
+void ssocksd(GlobalArgs args) {
+	const char* bindAddr =args.listenHost;
+	int port = args.iListenPort;
+	int ssl = args.ssl;
+	int soc_ec = -1, maxfd, res, nc;
+	fd_set set_read;
+	fd_set set_write;
+	struct sockaddr_in addrS;
+	char methods[2];
+
+	s_socks_conf conf;
+	s_socks_server_config config;
+	conf.config.srv = &config;
+
+	char versions[] = { SOCKS5_V,
+						SOCKS4_V
+	};
+
+	config.allowed_version = versions;
+	config.n_allowed_version = sizeof(versions);
+
+	methods[0] = 0x00;
+
+	config.allowed_method = methods;
+	config.n_allowed_method = 1;
+	//config.check_auth = check_auth;
+
+	/* Init client tab */
+	for (nc = 0; nc < MAXCLI; nc++)
+		init_client(&tc[nc], nc, M_SERVER, &conf);
+
+	if (bindAddr == 0)
+		soc_ec = new_listen_socket(NULL, port, 0, &addrS);
+	else
+		soc_ec = new_listen_socket(bindAddr, port, 0, &addrS);
+
+	if (soc_ec < 0) goto fin_serveur;
+
+
+#ifndef WIN32
+	if (globalArgsServer.daemon == 1) {
+		TRACE(L_NOTICE, "server: mode daemon ...");
+		if (daemon(0, 0) != 0) {
+			perror("daemon");
+			exit(1);
+		}
+		writePID(PID_FILE);
+	}
+
+	bor_signal(SIGINT, capte_fin, SA_RESTART);
+
+	/* Need in daemon to remove the PID file properly */
+	bor_signal(SIGTERM, capte_fin, SA_RESTART);
+	bor_signal(SIGPIPE, capte_sigpipe, SA_RESTART);
+	/* TODO: Find a better way to exit the select and recall the init_select
+	 * SIGUSR1 is send by a thread to unblock the select */
+	bor_signal(SIGUSR1, capte_usr1, SA_RESTART);
+#endif
+
+	while (boucle_princ) {
+		init_select_server(soc_ec, tc, &maxfd, &set_read, &set_write);
+
+		res = select(maxfd + 1, &set_read, &set_write, NULL, NULL);
+
+		if (res > 0) { /* Search eligible sockets */
+
+			if (FD_ISSET(soc_ec, &set_read))
+				new_connection(soc_ec, tc, ssl);
+
+			for (nc = 0; nc < MAXCLI; nc++) {
+				dispatch_server(&tc[nc], &set_read, &set_write);
+			}
+
+		}
+		else if (res == 0) {
+
+		}
+		else if (res < 0) {
+			if (errno == EINTR); /* Received signal, it does nothing */
+			else {
+				perror("select");
+				goto fin_serveur;
+			}
+		}
+	}
+
+fin_serveur:
+#ifdef HAVE_LIBSSL
+	if (globalArgsServer.ssl == 1)
+		ssl_cleaning();
+#endif
+	TRACE(L_NOTICE, "server: closing sockets ...");
+	close_log();
+	for (nc = 0; nc < MAXCLI; nc++) disconnection(&tc[nc]);
+	if (soc_ec != -1) CLOSE_SOCKET(soc_ec);
+
 }
