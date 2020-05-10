@@ -41,8 +41,8 @@ enum {
     L_DEBUG
 };
 
-void TRACE(int level, char *template, ...);
-void ERROR(int level, char *template, ...);
+void TRACE(int level, const char* fmt, ...);
+void ERROR(int level, const char* fmt, ...);
 void DUMP (const char *s, size_t n);
 void trim(char * s);
 

@@ -35,24 +35,24 @@
 
 int verbosity = 0;
 
-void ERROR(int level, char *template, ...) {
-    va_list ap;
-    va_start(ap, template);
+void ERROR(int level, const char *fmt, ...) {
     if ( level <= verbosity ) {
-        vfprintf(stderr, template, ap);
-        printf("\n");
+        va_list args;
+        va_start(args, fmt);
+        vfprintf(stderr, fmt, args);
+        va_end(args);
+        fprintf(stderr, "\n");
     }
-    va_end(ap);
 }
 
-void TRACE(int level, char *template, ...) {
-    va_list ap;
-    va_start(ap, template);
-    if ( level <= verbosity ) {
-        vfprintf(stdout, template, ap);
-        printf("\n");
+void TRACE(int level, const char *fmt, ...) {
+    if (level <= verbosity) {
+        va_list args;
+        va_start(args, fmt);
+        vfprintf(stdout, fmt, args);
+        va_end(args);
+        fprintf(stdout, "\n");
     }
-    va_end(ap);
 }
 
 void DUMP(const char *s, size_t n) {
