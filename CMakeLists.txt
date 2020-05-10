@@ -21,6 +21,8 @@ project ("lcx")
 
 # force static runtime libraries for msvc builds
 if(MSVC)
+    add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+    add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
   set(variables 
     CMAKE_CXX_FLAGS_DEBUG

@@ -16,9 +16,13 @@
 #include <sys/types.h> 
 
 #include "LcxConfig.h"
-#include "socket.h"
+#include "unisocket.h"
 
 #include "../lib/wingetopt/src/getopt.h"
+#include "../lib/libsocks/output-util.h"
+#include "../lib/libsocks/client.h"
+#include "../lib/libsocks/socks5-client.h"
+#include "../lib/libsocks/socks5-server.h"
 
 
 #define TIMEOUT 300
@@ -28,12 +32,15 @@
 
 typedef enum _METHOD
 {
-	LISTEN = 1, TRAN, SLAVE
+	LISTEN = 1, TRAN, SLAVE, SSOCKSD, RCSOCKS, RSSOCKS
 }METHOD;
 
 #define STR_LISTEN "listen"
 #define STR_TRAN "tran"
 #define STR_SLAVE "slave"
+#define STR_SSOCKSD "ssocksd"
+#define STR_RCSOCKS "rcsocks"
+#define STR_RSSOCKS "rssocks"
 
 // define 2 socket struct
 typedef struct _transocket
@@ -59,6 +66,8 @@ typedef struct _GlobalArgs {
 	char* transmitHost;
 
 	int bFreeConsole;
+
+	int ssl;
 }GlobalArgs;
 
 // define function 
@@ -77,5 +86,8 @@ int create_socket();
 int create_server(int sockfd, int port);
 int client_connect(int sockfd, char* server, int port);
 
-
 METHOD str2method(char* method);
+
+void ssocksd(GlobalArgs args);
+void rcsocks(GlobalArgs args);
+void rssocks(GlobalArgs args);
