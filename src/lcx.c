@@ -49,6 +49,9 @@ METHOD str2method(char* method) {
 	else if (!strcmp(method, STR_RSSOCKS)) {
 		return RSSOCKS;
 	}
+	else if (!strcmp(method, STR_NETCAT)) {
+		return NETCAT;
+	}
 	else {
 		return 0;
 	}
@@ -71,14 +74,17 @@ int main(int argc, char* argv[])
 	int option_index = 0;
 
 	register int option;
-	while ((option = getopt(argc, argv, ":s:l:m:d:e:f:g:v:")) != EOF) {
+while ((option = getopt(argc, argv, ":S:l:m:d:e:f:g:v:")) != EOF) {
 
 		switch (option) {
-		case 's':
+		case 'S':
 			printf("Given Option: %c\n", option);
             if (optarg) {
                 globalArgs.method = str2method(optarg);
             }
+			if (globalArgs.method == NETCAT) {
+				goto  argsFinished;
+			}
 			break;
 
 		case 'l':
@@ -129,8 +135,6 @@ int main(int argc, char* argv[])
 			break;
 		case '?':
 			printf("Given Option: %c\n", option);
-			helpme();			/* exits by itself */
-			break;
 		default:
 			errno = 0;
 			helpme();
@@ -138,11 +142,11 @@ int main(int argc, char* argv[])
 	} /* while getopt */
 	//globalArgs.inputFiles = argv + optind;
 	//globalArgs.numInputFiles = argc - optind;
-
+argsFinished: ;
 
     // Win Start Winsock.
     WSADATA wsadata;
-    WSAStartup(MAKEWORD(1, 1), &wsadata);
+  WSAStartup(MAKEWORD(1, 1), &wsadata);
 
 #ifdef WIN32
 	WSADATA wsaData;
@@ -180,6 +184,9 @@ int main(int argc, char* argv[])
 		break;
 	case RSSOCKS:
 		rssocks(globalArgs);
+		break;
+	case NETCAT:
+		netcat(argc, argv);
 		break;
 	default:
 		helpme();
