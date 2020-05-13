@@ -32,7 +32,7 @@
 
 typedef enum _METHOD
 {
-	LISTEN = 1, TRAN, SLAVE, SSOCKSD, RCSOCKS, RSSOCKS
+	LISTEN = 1, TRAN, SLAVE, SSOCKSD, RCSOCKS, RSSOCKS, NETCAT
 }METHOD;
 
 #define STR_LISTEN "listen"
@@ -41,6 +41,7 @@ typedef enum _METHOD
 #define STR_SSOCKSD "ssocksd"
 #define STR_RCSOCKS "rcsocks"
 #define STR_RSSOCKS "rssocks"
+#define STR_NETCAT "netcat"
 
 // define 2 socket struct
 typedef struct _transocket
@@ -91,3 +92,4 @@ METHOD str2method(char* method);
 void ssocksd(GlobalArgs args);
 void rcsocks(GlobalArgs args);
 void rssocks(GlobalArgs args);
+void netcat(int argc, char** argv);

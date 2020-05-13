@@ -6,7 +6,9 @@ cmake_minimum_required (VERSION 3.8)
 MESSAGE(STATUS "operation system is ${CMAKE_SYSTEM}")
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
-option(test "Build all tests." ON) # Makes boolean 'test' available.
+option(GAPING_SECURITY_HOLE "nc with -e option" ON)
+option(TELNET "nc with -t option" ON)
+option(test "Build all tests." OFF) # Makes boolean 'test' available.
 
 # Check platforms
 if (CMAKE_HOST_WIN32)
@@ -23,7 +25,7 @@ project ("lcx")
 if(MSVC)
     add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
     add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS -DGAPING_SECURITY_HOLE -DTELNET)
   set(variables 
     CMAKE_CXX_FLAGS_DEBUG
     CMAKE_CXX_FLAGS_RELEASE
