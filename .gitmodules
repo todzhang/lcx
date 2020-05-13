@@ -1,0 +1,9 @@
+[submodule "third-party/gtest"]
+	path = third-party/gtest
+	url = https://github.com/google/googletest.git
+[submodule "lib/wingetopt"]
+	path = lib/wingetopt
+	url = https://github.com/alex85k/wingetopt.git
+[submodule "third-party/ssocks"]
+	path = third-party/ssocks
+	url = https://github.com/tostercx/ssocks.git
