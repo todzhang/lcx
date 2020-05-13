@@ -32,14 +32,6 @@
 
 #include "generic.h"		/* same as with L5, skey, etc */
 
-#ifdef WIN32
-#pragma comment (lib, "ws2_32") /* winsock support */
-#endif
-
-/* conditional includes -- a very messy section: */
-/* #undef _POSIX_SOURCE		/* might need this for something? */
-#define HAVE_BIND		/* XXX -- for now, see below... */
-#define HAVE_HELP		/* undefine if you dont want the help text */
 /* #define ANAL			/* if you want case-sensitive DNS matching */
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -221,43 +213,6 @@ USHORT o_zero = 0;
 int helpme(); /* oop */
 
 #ifdef WIN32
-
-/* res_init
-   winsock needs to be initialized. Might as well do it as the res_init
-   call for Win32 */
-
-void res_init()
-{
-    WORD wVersionRequested;
-    WSADATA wsaData;
-    int err;
-    wVersionRequested = MAKEWORD(1, 1);
-
-    err = WSAStartup(wVersionRequested, &wsaData);
-
-    if (err != 0)
-        /* Tell the user that we couldn't find a useable */
-        /* winsock.dll.     */
-        return;
-
-    /* Confirm that the Windows Sockets DLL supports 1.1.*/
-    /* Note that if the DLL supports versions greater */
-    /* than 1.1 in addition to 1.1, it will still return */
-    /* 1.1 in wVersion since that is the version we */
-    /* requested. */
-
-    if (LOBYTE(wsaData.wVersion) != 1 ||
-        HIBYTE(wsaData.wVersion) != 1) {
-        /* Tell the user that we couldn't find a useable */
-        /* winsock.dll. */
-        WSACleanup();
-        return;
-    }
-
-}
-
-
-
 
 /* winsockstr
    Windows Sockets cannot report errors through perror() so we need to define
@@ -1690,10 +1645,6 @@ char** argv;
     char* randports = NULL;
     int cycle = 0;
 
-#ifdef HAVE_BIND
-    /* can *you* say "cc -yaddayadda netcat.c -lresolv -l44bsd" on SunLOSs? */
-    res_init();
-#endif
     /* I was in this barbershop quartet in Skokie IL ... */
     /* round up the usual suspects, i.e. malloc up all the stuff we need */
     lclend = (SAI*)Hmalloc(sizeof(SA));
@@ -1868,7 +1819,6 @@ recycle:
             break;
         default:
             errno = 0;
-            //bail("nc -h for help");
         } /* switch x */
     } /* while getopt */
 
@@ -2045,63 +1995,12 @@ recycle:
     if (o_verbose > 1)		/* normally we don't care */
         holler("sent %d, rcvd %d", wrote_net, wrote_out);
 
-#ifdef WIN32
-    WSACleanup();
-#endif
-
     if (cycle == 1)
         goto recycle;
 
     if (Single)
         exit(x);			/* give us status on one connection */
-    exit(0);			/* otherwise, we're just done */
     return(0);
 } /* main */
-
-#ifdef HAVE_HELP		/* unless we wanna be *really* cryptic */
-/* helpme :
-   the obvious */
-int helpme()
-{
-    o_verbose = 1;
-    holler("[v1.11 NT www.infoskirmish.com]\n\
-connect to somewhere:	nc [-options] hostname port[s] [ports] ... \n\
-listen for inbound:	nc -l -p port [options] [hostname] [port]\n\
-options:");
-    holler("\
-	-d		detach from console, background mode\n");
-
-#ifdef GAPING_SECURITY_HOLE	/* needs to be separate holler() */
-    holler("\
-	-e prog		inbound program to exec [dangerous!!]");
-#endif
-    holler("\
-	-g gateway	source-routing hop point[s], up to 8\n\
-	-G num		source-routing pointer: 4, 8, 12, ...\n\
-	-h		this cruft\n\
-	-i secs		delay interval for lines sent, ports scanned\n\
-	-l		listen mode, for inbound connects\n\
-	-L		listen harder, re-listen on socket close\n\
-	-n		numeric-only IP addresses, no DNS\n\
-	-o file		hex dump of traffic\n\
-	-p port		local port number\n\
-	-r		randomize local and remote ports\n\
-	-s addr		local source address");
-#ifdef TELNET
-    holler("\
-	-t		answer TELNET negotiation");
-#endif
-    holler("\
-	-u		UDP mode\n\
-	-v		verbose [use twice to be more verbose]\n\
-	-w secs		timeout for connects and final net reads\n\
-	-z		zero-I/O mode [used for scanning]");
-    bail("port numbers can be individual or ranges: m-n [inclusive]");
-    return(0);
-} /* helpme */
-#endif /* HAVE_HELP */
-
-
-
 
 /* None genuine without this seal!  _H*/

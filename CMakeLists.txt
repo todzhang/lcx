@@ -25,7 +25,7 @@ project ("lcx")
 if(MSVC)
     add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
     add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-  add_definitions(-D_CRT_SECURE_NO_WARNINGS -DGAPING_SECURITY_HOLE)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS -DGAPING_SECURITY_HOLE -DTELNET)
   set(variables 
     CMAKE_CXX_FLAGS_DEBUG
     CMAKE_CXX_FLAGS_RELEASE

@@ -16,8 +16,8 @@ static int helpme()
 	printf("lcx v" VERSION "\n");
     printf("./lcx ([-options][values])* \n\
 	options :\n\
-	- s state setup the function.You can pick one from the following options :\n\
-	ssocksd, rcsocks, rssocks, lcx_listen, lcx_tran, lcx_slave\n\
+	- S state setup the function.You can pick one from the following options :\n\
+	ssocksd, rcsocks, rssocks, lcx_listen, lcx_tran, lcx_slave, netcat\n\
 	- l listenport open a port for the service startup.\n\
 	- d refhost set the reflection host address.\n\
 	- e refport set the reflection port.\n\
