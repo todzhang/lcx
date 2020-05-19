@@ -3,3 +3,5 @@
 #define LCX_VERSION_MINOR @LCX_VERSION_MINOR@
 
 #define VERSION "@LCX_VERSION@"
+#cmakedefine WIN32
+#cmakedefine _WIN32

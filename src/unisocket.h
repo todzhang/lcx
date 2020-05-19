@@ -1,7 +1,7 @@
 #ifndef UNISOCK
 #define UNISOCK
 
-#ifdef _WIN32
+#ifdef WIN32
 #define CLOSE_SOCKET closesocket
 #define CLOSE_AND_CLEAN(x) closesocket(x); WSACleanup()
 #else
@@ -9,8 +9,10 @@
 #define CLOSE_AND_CLEAN close
 #endif
 
-#ifdef _WIN32
-#include <winsock.h>
+#ifdef WIN32
+//#include <winsock.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <stdint.h>
 #define sockaddr_un sockaddr_in
 #pragma comment(lib, "ws2_32.lib")

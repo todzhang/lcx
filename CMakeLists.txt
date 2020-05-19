@@ -19,7 +19,7 @@ elseif(CMAKE_HOST_UNIX)
     set(LINUX 1)
 endif()
 
-project ("lcx")
+project ("lcx" C)
 
 # force static runtime libraries for msvc builds
 if(MSVC)
@@ -55,9 +55,9 @@ configure_file (
 # so that we will find TutorialConfig.h
 include_directories("${PROJECT_BINARY_DIR}")
 
-file(GLOB_RECURSE LCX_SOURCES "src/*.c")
-file(GLOB_RECURSE LIB_SOURCES "lib/*.c")
-file(GLOB_RECURSE LCX_HEADERS "*.h")
+file(GLOB LCX_SOURCES src/*.c)
+file(GLOB_RECURSE LIB_SOURCES lib/*.c)
+file(GLOB_RECURSE LCX_HEADERS src/*.h lib/*.h)
 
 set (LCX_INCLUDE_DIRS "")
 foreach (_headerFile ${LCX_HEADERS})
