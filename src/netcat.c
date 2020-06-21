@@ -1620,7 +1620,7 @@ int fd;
 
     /* main :
        now we pull it all together... */
-netcat(argc, argv)
+int netcat(argc, argv)
 int argc;
 char** argv;
 {

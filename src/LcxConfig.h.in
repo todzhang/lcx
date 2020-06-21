@@ -5,3 +5,4 @@
 #define VERSION "@LCX_VERSION@"
 #cmakedefine WIN32
 #cmakedefine _WIN32
+#cmakedefine NTFIXTHIS

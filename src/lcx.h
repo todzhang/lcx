@@ -32,7 +32,7 @@
 
 typedef enum _METHOD
 {
-	LISTEN = 1, TRAN, SLAVE, SSOCKSD, RCSOCKS, RSSOCKS, NETCAT
+	LISTEN = 10, TRAN, SLAVE, SSOCKSD=20, RCSOCKS, RSSOCKS, NETCAT=30
 }METHOD;
 
 #define STR_LISTEN "listen"
@@ -71,6 +71,8 @@ typedef struct _GlobalArgs {
 	int ssl;
 }GlobalArgs;
 
+extern GlobalArgs globalArgs;
+
 // define function 
 void ver();
 void usage(char* prog);
@@ -92,4 +94,4 @@ METHOD str2method(char* method);
 void ssocksd(GlobalArgs args);
 void rcsocks(GlobalArgs args);
 void rssocks(GlobalArgs args);
-void netcat(int argc, char** argv);
+int netcat(int argc, char** argv);
